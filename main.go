@@ -9,8 +9,8 @@ import (
 func main() {
 	cmd.Init()
 	dbsettings := configuration.LoadConfiguration(cmd.CONFIGFILE)
-	inputdb := db.DBClient{Uri: dbsettings.InputDB.URI, Dbtype: dbsettings.InputDB.DBType, Targetschema: dbsettings.InputDB.TargetSchema}
-	outputdb := db.DBClient{Uri: dbsettings.OutputDB.URI, Dbtype: dbsettings.OutputDB.DBType, Targetschema: dbsettings.OutputDB.TargetSchema}
+	inputdb := db.Client{URI: dbsettings.InputDB.URI, Dbtype: dbsettings.InputDB.DBType, Targetschema: dbsettings.InputDB.TargetSchema}
+	outputdb := db.Client{URI: dbsettings.OutputDB.URI, Dbtype: dbsettings.OutputDB.DBType, Targetschema: dbsettings.OutputDB.TargetSchema}
 
 	inputdb.Connect()
 	outputdb.Connect()
