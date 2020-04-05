@@ -1,8 +1,8 @@
 input_db:
-  uri: "postgres://postgres@db/postgres?sslmode=disable"
+  uri: "postgresql://localhost:5432/postgres?sslmode=disable"
   db_type: "postgres"
   target_schema: "pg_catalog"
 output_db:
-  uri: "postgres://postgres@db/postgres?sslmode=disable"
+  uri: "postgresql://localhost:5433/postgres?sslmode=disable"
   db_type: "postgres"
   target_schema: "public"
