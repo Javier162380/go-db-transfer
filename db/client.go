@@ -62,7 +62,7 @@ func ReplicateSchema(input_db DBClient, output_db DBClient) {
 		}
 
 		tablemetadata := gettablemetadata(input_db, input_db.Targetschema, tablename)
-		statement := createtablestatement(tablemetadata, tablename, tmptableschema)
+		statement := createtablestatement(tablemetadata, tablename, output_db.Tmptargetschema)
 		tx.Exec(statement)
 
 	}
