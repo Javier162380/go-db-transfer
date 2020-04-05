@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"log"
+	"os"
+	"strings"
+
 	"github.com/spf13/cobra"
 )
 
@@ -16,6 +20,14 @@ examples and usage of using your application. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		configfile, _ := cmd.Flags().GetString("config")
+		if strings.HasSuffix(configfile, ".yaml") == false {
+			log.Fatal("Invalid file extension only Yaml it is supported")
+			os.Exit(1)
+		}
+
+	},
 }
 
 // Init App Cli 
