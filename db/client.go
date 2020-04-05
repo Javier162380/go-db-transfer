@@ -10,10 +10,11 @@ import (
 )
 
 type DBClient struct {
-	Uri          string
-	Dbtype       string
-	Targetschema string
-	Connection   *sql.DB
+	Uri             string
+	Dbtype          string
+	Targetschema    string
+	Connection      *sql.DB
+	Tmptargetschema string
 }
 
 func (dbc *DBClient) Connect() {
@@ -28,6 +29,8 @@ func (dbc *DBClient) Connect() {
 			os.Exit(1)
 		}
 
+		dbc.Tmptargetschema = temptableschemaname(dbc.Targetschema)
+
 	case dbc.Dbtype != "postgres":
 		log.Fatal("DB type not supportted currently")
 
@@ -36,15 +39,13 @@ func (dbc *DBClient) Connect() {
 
 func ReplicateSchema(input_db DBClient, output_db DBClient) {
 
-	tmptableschema := temptableschemaname(output_db.Targetschema)
-
 	tx, err := output_db.Connection.Begin()
 
 	if err != nil {
 		log.Fatal("Unabled to connect to outputdb", err)
 		os.Exit(1)
 	}
-	tx.Exec("CREATE SCHEMA $1", tmptableschema)
+	tx.Exec("CREATE SCHEMA $1", output_db.Tmptargetschema)
 
 	rows, err := input_db.Connection.Query("SELECT table_name FROM information_schema.tables WHERE table_schema=$1", input_db.Targetschema)
 
