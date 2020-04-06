@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"time"
 
 	//postgresql driver
 	_ "github.com/lib/pq"
@@ -114,7 +116,9 @@ func gettablemetadata(db Client, tableschema string, tablename string) map[strin
 
 func temptableschemaname(tableschema string) string {
 
-	return fmt.Sprintf("%s_temp", tableschema)
+	currenttime := strconv.FormatInt(time.Now().Unix(), 10)
+
+	return fmt.Sprintf("%s_temp_%s", tableschema, currenttime)
 
 }
 func createtablestatement(tablemetadata map[string]string, tablename string, tableschema string) string {
