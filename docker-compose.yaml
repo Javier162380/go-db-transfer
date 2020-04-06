@@ -3,30 +3,21 @@ services:
   input_db:
     image: postgres:latest
     ports:
-      - "5432:5432"
-    networks:
-      - db-network
-    restart: unless-stopped
+      - "5434:5432"
+    restart: always
     volumes:
-      - input_db_volumen:/var/lib/postgresql/data
+      - input_db:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: "db"
-      POSTGRES_HOST_AUTH_METHOD: "trust"
+      POSTGRES_PASSWORD: "postgres"
   output_db:
     image: postgres:latest
     ports:
       - "5433:5432"
-    networks:
-      - db-network
-    restart: unless-stopped
-    volumes:
-      - output_db_volumen:/var/lib/postgresql/data
+    restart: always
     environment:
-      POSTGRES_DB: "db"
-      POSTGRES_HOST_AUTH_METHOD: "trust"
+      POSTGRES_PASSWORD: "postgres"
+    volumes:
+      - output_db:/var/lib/postgresql/data
 volumes:
-  input_db_volumen:
-  output_db_volumen:
-networks:
-  db-network:
-    driver: bridge
+  input_db:
+  output_db:
