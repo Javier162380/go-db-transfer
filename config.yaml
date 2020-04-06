@@ -3,6 +3,6 @@ input_db:
   db_type: "postgres"
   target_schema: "information_schema"
 output_db:
-  uri: "postgres://postgres:postgres@localhost:5434/postgres?sslmode=disable"
+  uri: "postgres://postgres:postgres@localhost:5433/postgres?sslmode=disable"
   db_type: "postgres"
   target_schema: "public"
