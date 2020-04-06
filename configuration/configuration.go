@@ -3,7 +3,6 @@ package configuration
 import (
 	"io/ioutil"
 	"log"
-	"os"
 
 	"gopkg.in/yaml.v2"
 )
@@ -19,21 +18,21 @@ type DBSETTINGS struct {
 	TargetSchema string `yaml:"target_schema"`
 }
 
+// LoadConfiguration method to load cli config yaml into a struct
 func LoadConfiguration(configfile string) DBCONFIGURATION {
 
 	var dbconfig DBCONFIGURATION
 	yamlfile, err := ioutil.ReadFile(configfile)
 
 	if err != nil {
-		log.Fatal("Unable to load config file, %s", configfile)
-		os.Exit(1)
+		log.Fatal("Unable to load config file, ", configfile)
+
 	}
 
 	err = yaml.Unmarshal(yamlfile, &dbconfig)
 
 	if err != nil {
-		log.Fatal("Unable to Unmarshall config file %s error %s", configfile, err)
-		os.Exit(1)
+		log.Fatal("Unable to Unmarshall config file error ", configfile, err)
 
 	}
 
