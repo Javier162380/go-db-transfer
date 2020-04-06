@@ -50,7 +50,7 @@ func ReplicateSchema(inputdb Client, outputdb Client) {
 	}
 
 	tableschemacreation := fmt.Sprintf("CREATE SCHEMA %s", outputdb.Tmptargetschema)
-
+	log.Printf("CREATING SCHEMA %s", outputdb.Tmptargetschema)
 	if _, err := tx.Exec(tableschemacreation); err != nil {
 		log.Fatal("Unable to create db schema ", err)
 	}
@@ -72,6 +72,7 @@ func ReplicateSchema(inputdb Client, outputdb Client) {
 
 		tablemetadata := gettablemetadata(inputdb, inputdb.Targetschema, tablename)
 		statement := createtablestatement(tablemetadata, tablename, outputdb.Tmptargetschema)
+		log.Printf("CREATING TABLE %s", tablename)
 		if _, err := tx.Exec(statement); err != nil {
 			log.Printf("Unable to create table %s  %s", tablename, err)
 			tx.Rollback()
@@ -119,8 +120,12 @@ func temptableschemaname(tableschema string) string {
 func createtablestatement(tablemetadata map[string]string, tablename string, tableschema string) string {
 
 	var fieldstring string
-	for column, datetype := range tablemetadata {
-		fieldstring += fmt.Sprintf("\"%s\" %s ,", column, datetype)
+	for column, datatype := range tablemetadata {
+		if datatype == "ARRAY" {
+			datatype = "VARCHAR"
+		}
+
+		fieldstring += fmt.Sprintf("\"%s\" %s ,", column, datatype)
 
 	}
 
