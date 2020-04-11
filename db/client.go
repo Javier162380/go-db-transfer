@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"time"
 
@@ -31,7 +30,6 @@ func (dbc *Client) Connect() {
 
 		if err != nil {
 			log.Fatal("Unable to connect to DB ", err)
-			os.Exit(1)
 		}
 
 		dbc.Tmptargetschema = temptableschemaname(dbc.Targetschema)
@@ -51,33 +49,23 @@ func ReplicateSchema(inputdb Client, outputdb Client) {
 		log.Fatal("Unabled to connect to outputdb ", err)
 	}
 
-	tableschemacreation := fmt.Sprintf("CREATE SCHEMA %s", outputdb.Tmptargetschema)
+	tableschemacreation := createschemastatement(outputdb.Tmptargetschema)
 	log.Printf("CREATING SCHEMA %s", outputdb.Tmptargetschema)
 	if _, err := tx.Exec(tableschemacreation); err != nil {
 		log.Fatal("Unable to create db schema ", err)
 	}
 
-	rows, err := inputdb.Connection.Query(`SELECT table_name 
-										   FROM information_schema.tables 
-										   WHERE table_schema=$1`, inputdb.Targetschema)
+	schematables := getschemametadata(inputdb, inputdb.Targetschema)
 
-	if err != nil {
-		log.Fatal("Unable to retrieve schema data ", err)
-	}
+	for _, table := range schematables {
 
-	defer rows.Close()
-	for rows.Next() {
-		var tablename string
-		if err := rows.Scan(&tablename); err != nil {
-			log.Fatal(err)
-		}
-
-		tablemetadata := gettablemetadata(inputdb, inputdb.Targetschema, tablename)
-		statement := createtablestatement(tablemetadata, tablename, outputdb.Tmptargetschema)
-		log.Printf("CREATING TABLE %s", tablename)
+		tablemetadata := gettablemetadata(inputdb, inputdb.Targetschema, table)
+		statement := createtablestatement(tablemetadata, table, outputdb.Tmptargetschema)
+		log.Printf("CREATING TABLE %s", table)
 		if _, err := tx.Exec(statement); err != nil {
-			log.Printf("Unable to create table %s  %s", tablename, err)
+			log.Printf("Unable to create table %s  %s", table, err)
 			tx.Rollback()
+
 		}
 
 	}
@@ -85,7 +73,28 @@ func ReplicateSchema(inputdb Client, outputdb Client) {
 	tx.Commit()
 }
 
-func gettablemetadata(db Client, tableschema string, tablename string) map[string]string {
+func getschemametadata(db Client, tableschema string) []string {
+	rows, err := db.Connection.Query(`SELECT table_name 
+	FROM information_schema.tables 
+	WHERE table_schema=$1`, tableschema)
+
+	if err != nil {
+		log.Fatal("Unable to retrieve data from ", err)
+	}
+	defer rows.Close()
+	var schematables []string
+
+	for rows.Next() {
+		var table string
+		if err := rows.Scan(&table); err != nil {
+		}
+		schematables = append(schematables, table)
+	}
+
+	return schematables
+}
+
+func gettablemetadata(db Client, tableschema string, tablename string) [][]string {
 
 	rows, err := db.Connection.Query(`SELECT column_name, data_type 
 	                                  FROM information_schema.columns 
@@ -94,20 +103,19 @@ func gettablemetadata(db Client, tableschema string, tablename string) map[strin
 
 	if err != nil {
 		log.Fatal("Unable to retrieve schema data ", rows)
-		os.Exit(1)
 	}
 
 	defer rows.Close()
-	results := make(map[string]string)
+	results := [][]string{}
 	for rows.Next() {
 		var columnname string
 		var datatype string
-
+		var rowresult []string
 		if err := rows.Scan(&columnname, &datatype); err != nil {
 			log.Fatal(err)
 		}
-
-		results[columnname] = datatype
+		rowresult = append(rowresult, columnname, datatype)
+		results = append(results, rowresult)
 
 	}
 
@@ -121,10 +129,13 @@ func temptableschemaname(tableschema string) string {
 	return fmt.Sprintf("%s_temp_%s", tableschema, currenttime)
 
 }
-func createtablestatement(tablemetadata map[string]string, tablename string, tableschema string) string {
+
+func createtablestatement(tablemetadata [][]string, tablename string, tableschema string) string {
 
 	var fieldstring string
-	for column, datatype := range tablemetadata {
+	for _, row := range tablemetadata {
+		column := row[0]
+		datatype := row[1]
 		if datatype == "ARRAY" {
 			datatype = "VARCHAR"
 		}
@@ -136,3 +147,33 @@ func createtablestatement(tablemetadata map[string]string, tablename string, tab
 	return fmt.Sprintf("CREATE TABLE %s.%s (%s)", tableschema, tablename, fieldstring[:len(fieldstring)-1])
 
 }
+
+func createschemastatement(schemaname string) string {
+
+	return fmt.Sprintf("CREATE SCHEMA %s", schemaname)
+}
+
+// func copytables(inputdb Client, outputdb Client) {
+
+// 	tx, err := outputdb.Connection.Begin()
+
+// 	if err != nil {
+// 		log.Fatal("Unabled to connect to outputdb ", err)
+// 	}
+
+// 	rows, err := inputdb.Connection.Query(`SELECT table_name
+// 										   FROM information_schema.tables
+// 										   WHERE table_schema=$1`, inputdb.Targetschema)
+
+// 	if err != nil {
+// 		log.Fatal("Unable to retrieve schema data ", rows)
+// 	}
+
+// 	for rows.Next() {
+// 		go func ()  {
+// 			tx, err := outputdb.Connection.Begin()
+
+// 		}
+
+// 	}
+// }

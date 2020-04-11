@@ -30,7 +30,7 @@ to quickly create a Cobra application.`,
 	},
 }
 
-// Init App Cli 
+// Init App Cli
 func Init() {
 
 	rootCmd.Flags().StringVar(&CONFIGFILE, "config", "", "Config file for the app")
