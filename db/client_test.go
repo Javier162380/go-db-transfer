@@ -52,7 +52,7 @@ func TestGetTableMetadata(t *testing.T) {
 		t.Fatal("Unable to connect to a testdb, ", err)
 	}
 
-	if _, err := tx.Exec("DROP TABLE IF EXISTS public.temp_test;CREATE TABLE public.temp_test (a text, c integer)"); err != nil {
+	if _, err := tx.Exec("DROP TABLE IF EXISTS public.temp_test CASCADE;CREATE TABLE public.temp_test (a text, c integer)"); err != nil {
 		t.Fatal("Unable to create seed tables ", err)
 	}
 
