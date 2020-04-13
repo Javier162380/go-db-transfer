@@ -4,6 +4,7 @@
 version: 2
 jobs:
   build:
+    working_directory: /go/src/github.com/javier162380/go-db-transfer
     docker:
       - image: circleci/postgres:10
         environment:
@@ -11,16 +12,16 @@ jobs:
       - image: circleci/golang:1.11
         environment:
           GO111MODULE: "on"
-      #working_directory: /go/src/github.com/javier162380/go-db-transfer
     steps:
       - checkout
       - run:
          name: Install dockerize
          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.1
+         environment:
+          DOCKERIZE_VERSION: v0.6.1
       - run:
           name: Wait for db
           command:  dockerize -wait tcp://localhost:5432 -timeout 1m
+      - run: go build -v
       - run: go get -v -t -d ./...
       - run: go test -race
